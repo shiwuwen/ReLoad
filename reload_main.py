@@ -23,7 +23,7 @@ REPLACEMENT = [
 MEMORY_CAPACITY = 10000
 BATCH_SIZE = 16
 
-OUTPUT_GRAPH = True
+OUTPUT_GRAPH = False
 
 
 env = Environment()
