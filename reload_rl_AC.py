@@ -25,12 +25,6 @@ GAMMA = 0.9     # reward discount in TD error
 LR_A = 0.001    # learning rate for actor
 LR_C = 0.001     # learning rate for critic
 
-env = Environment()
-N_F = env.state_dim
-N_A = env.action_dim
-
-
-
 
 class Actor(object):
     def __init__(self, sess, n_features, n_actions, lr=0.00001):
@@ -120,6 +114,15 @@ class Critic(object):
         td_error, _ = self.sess.run([self.td_error, self.train_op],
                                           {self.s: s, self.v_: v_, self.r: r})
         return td_error
+
+
+env = Environment()
+N_F = env.state_dim
+N_A = env.action_dim
+
+print(env.a, env.N, env.c)
+print(env.g)
+
 
 
 sess = tf.Session()
