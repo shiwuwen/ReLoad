@@ -14,16 +14,16 @@ import numpy as np
 import tensorflow as tf
 from reload_environment import Environment
 
-np.random.seed(2)
+# np.random.seed(2)
 tf.set_random_seed(2)  # reproducible
 
 # Superparameters
 OUTPUT_GRAPH = False
-MAX_EPISODE = 50
-MAX_EP_STEPS = 5   # maximum time step in one episode
+MAX_EPISODE = 100
+MAX_EP_STEPS = 50   # maximum time step in one episode
 GAMMA = 0.9     # reward discount in TD error
 LR_A = 0.001    # learning rate for actor
-LR_C = 0.01     # learning rate for critic
+LR_C = 0.001     # learning rate for critic
 
 env = Environment()
 N_F = env.state_dim
@@ -148,13 +148,15 @@ for i_episode in range(MAX_EPISODE):
         track_r.append(r)
 
         td_error = critic.learn(s, r, s_)  # gradient = grad[r + gamma * V(s_) - V(s)]
-        act_prob = actor.learn(s, a, td_error)     # true_gradient = grad[logPi(s,a) * td_error]
+        actor.learn(s, a, td_error)     # true_gradient = grad[logPi(s,a) * td_error]
 
-        print('action probability: ', a, td_error)
+        # print('action probability: ', a, td_error)
         s = s_
 
         if step == MAX_EP_STEPS - 1:
-            print(a, s_, r)
+            print('action probability: ', a)
+            # print('state : ', s)
+            print('reward : ', r)
             ep_rs_sum = sum(track_r)
-            print('Episode:', i_episode, ' Reward: ', ep_rs_sum, 'action probability: ', act_prob)
+            print('Episode:', i_episode, ' Reward: ', ep_rs_sum)
 

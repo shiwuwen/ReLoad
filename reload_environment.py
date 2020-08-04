@@ -1,6 +1,7 @@
 import numpy as np
 from shortest_path import dijkstra
 
+# np.random.seed(1)
 
 class Environment:
 	'''
@@ -12,11 +13,11 @@ class Environment:
 ### init start ###
 	def __init__(self):
 		#用户设备的计算能力 GHz
-		self.a = np.random.uniform(10,40)
+		self.a = np.random.uniform(0.10,0.40)
 		#边缘服务器的数量
-		self.N = 5 #np.random.randint(10,20)
+		self.N = np.random.randint(5,10)
 		#N个边缘服务器的计算能力 GHz
-		self.c = np.random.uniform(100,200, size=self.N)
+		self.c = np.random.uniform(1.00,2.00, size=self.N)
 		#任意两个边缘服务器之间的传播延迟，这里通过随机数生成 s
 		self.g = self._get_es_propagation_delay(self.N)
 		#获取任意两个服务器之间的最短延迟
@@ -61,6 +62,15 @@ class Environment:
 
 ### init end ###
 
+### del start ###
+	# def __del__(self):
+	# 	'''
+	# 	注销class
+	# 	'''
+	# 	class_name = self.__class__.__name__
+	# 	print('注销')
+### del end ###
+
 ### reset start ###
 	def reset(self):
 		'''
@@ -71,11 +81,11 @@ class Environment:
 		self.delta_t = np.random.exponential(self.lamda)
 		
 		#0时刻任务f对应的工作量
-		self.w = np.random.uniform(100,400)
+		self.w = np.random.uniform(1.00,4.00)
 		
 		#当前用户所处的边缘服务器位置
 		self.n = np.random.randint(self.N)
-		print('n : ', self.n)
+		# print('n : ', self.n)
 
 		#0时刻任务f的deadline
 		d_min = self.w/self.a
@@ -147,7 +157,7 @@ class Environment:
 			if action[i] > 0:
 				cost += self.shortest_g[self.n, i]
 
-		print('propagation delay: ', cost)
+		# print('propagation delay: ', cost)
 		return cost
 
 	def _get_work_time(self, action, t2):
@@ -181,10 +191,10 @@ class Environment:
 
 		self.delta_t = np.random.exponential(self.lamda)
 
-		self.w = np.random.uniform(100,400)
+		self.w = np.random.uniform(1.00,4.00)
 		
 		self.n = np.random.randint(self.N)
-		print('n : ', self.n)
+		# print('n : ', self.n)
 
 		d_min = self.w/self.a
 		d_max = self.w/(self.a + self.c[self.n])

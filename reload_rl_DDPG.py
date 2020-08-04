@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 
-np.random.seed(1)
+# np.random.seed(1)
 tf.set_random_seed(1)
 
 class Actor(object):
@@ -46,7 +46,7 @@ class Actor(object):
                 actions = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, kernel_initializer=init_w,
                                           bias_initializer=init_b, name='a', trainable=trainable)
                 # scaled_a = tf.multiply(actions, self.action_bound, name='scaled_a')  # Scale output to -action_bound to action_bound
-        return actions #scaled_a
+        return tf.nn.softmax(actions) #scaled_a
 
     def learn(self, s):   # batch update
         self.sess.run(self.train_op, feed_dict={self.S: s})

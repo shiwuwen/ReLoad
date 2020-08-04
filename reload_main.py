@@ -1,6 +1,7 @@
 import tensorflow as tf 
 import numpy as np
 import time
+import gc
 
 from reload_environment import Environment
 from reload_rl_DDPG import Actor, Critic, Memory
@@ -8,8 +9,8 @@ from reload_rl_DDPG import Actor, Critic, Memory
 
 #####################  hyper parameters  ####################
 
-MAX_EPISODES = 1000
-MAX_EP_STEPS = 200
+MAX_EPISODES = 100
+MAX_EP_STEPS = 20
 
 LR_A = 0.001    # learning rate for actor
 LR_C = 0.001    # learning rate for critic
@@ -20,7 +21,7 @@ REPLACEMENT = [
     dict(name='hard', rep_iter_a=600, rep_iter_c=500)
 ][0]            # you can try different target replacement strategies
 
-MEMORY_CAPACITY = 10000
+MEMORY_CAPACITY = 500
 BATCH_SIZE = 16
 
 OUTPUT_GRAPH = False
@@ -29,6 +30,9 @@ OUTPUT_GRAPH = False
 env = Environment()
 state_dim = env.state_dim
 action_dim = env.action_dim
+
+print(env.a, env.N, env.c)
+print(env.g)
 
 with tf.name_scope('S'):
 	S = tf.placeholder(tf.float32, shape=[None, state_dim], name='s')
@@ -76,6 +80,12 @@ for i in range(MAX_EPISODES):
 		ep_reward += r
 
 		if j == MAX_EP_STEPS-1:
+			print('action probability: ', a)
+			# print('state : ', s)
+			print('reward : ', r)
 			print('Episode:', i, ' Reward: %i' % int(ep_reward))
 
 print('Running time: ', time.time()-t1)
+
+del env
+gc.collect()
