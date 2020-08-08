@@ -6,7 +6,7 @@ import time
 # np.random.seed(1)
 tf.set_random_seed(1)
 
-class Actor(object):
+class Actor_ddpg(object):
     def __init__(self, sess, action_dim, learning_rate, replacement, S, R, S_):
         self.sess = sess
         self.a_dim = action_dim
@@ -77,7 +77,7 @@ class Actor(object):
 
 ###############################  Critic  ####################################
 
-class Critic(object):
+class Critic_ddpg(object):
     def __init__(self, sess, state_dim, action_dim, learning_rate, gamma, replacement, a, a_, S, R, S_):
         self.sess = sess
         self.s_dim = state_dim
@@ -132,7 +132,7 @@ class Critic(object):
                 net = tf.nn.relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
 
             with tf.variable_scope('q'):
-                q = tf.layers.dense(net, 1, kernel_initializer=init_w, bias_initializer=init_b, trainable=trainable)   # Q(s,a)
+                q = tf.layers.dense(net, self.a_dim, kernel_initializer=init_w, bias_initializer=init_b, trainable=trainable)   # Q(s,a)
         return q
 
     def learn(self, s, a, r, s_):
@@ -147,7 +147,7 @@ class Critic(object):
 
 #####################  Memory  ####################
 
-class Memory(object):
+class Memory_ddpg(object):
     def __init__(self, capacity, dims):
         self.capacity = capacity
         self.data = np.zeros((capacity, dims))

@@ -2,7 +2,7 @@ import numpy as np
 from shortest_path import dijkstra
 
 #当此行存在时，np.random生成的随机数始终相同，用于比较两个不同算法对于同一输入的不同性能
-np.random.seed(1)
+# np.random.seed(15)
 
 class Environment:
 	'''
@@ -16,17 +16,17 @@ class Environment:
 ### init start ###
 	def __init__(self):
 		#用户设备的计算能力 GHz
-		self.a = np.random.uniform(0.10,0.40)
+		self.a = np.random.uniform(0.010,0.040)
 		#边缘服务器的数量
 		self.N = np.random.randint(5,10)
 		#N个边缘服务器的计算能力 GHz
-		self.c = np.random.uniform(1.00,2.00, size=self.N)
+		self.c = np.random.uniform(0.100,0.200, size=self.N)
 		#任意两个边缘服务器之间的传播延迟，这里通过随机数生成 s
 		self.g = self._get_es_propagation_delay(self.N)
 		#获取任意两个服务器之间的最短延迟
 		self.shortest_g = self._get_shortest_es_delay(self.g)
 		#任务到达时间所服从的指数分布的均值
-		self.lamda = np.random.uniform(2, 5)
+		self.lamda = np.random.uniform(4, 8)
 		#用户设备和N个服务器之间的上传带宽 MHz
 		self.uplink = self._get_user_server_uplink()
 		#动作空间的纬度
@@ -61,7 +61,7 @@ class Environment:
 		获取用户设备与边缘服务器之间的上传带宽
 		本版本中通过均匀分布随机采样
 		'''
-		return np.random.uniform(1, 2, size=self.N)
+		return np.random.uniform(1.000, 2.000, size=self.N)
 
 ### init end ###
 
@@ -84,7 +84,7 @@ class Environment:
 		self.delta_t = np.random.exponential(self.lamda)
 		
 		#0时刻任务f对应的工作量
-		self.w = np.random.uniform(1.00,4.00)
+		self.w = np.random.uniform(0.100,0.400)
 		
 		#当前用户所处的边缘服务器位置
 		self.n = np.random.randint(self.N)
@@ -96,7 +96,7 @@ class Environment:
 		self.d = np.random.uniform(d_min, d_max)
 
 		#0时刻任务f的inputsize  Mbit
-		self.s = np.random.uniform(0.5, 2)
+		self.s = np.random.uniform(2.000, 4.000)
 
 		#0时刻用户的上传带宽  MHz
 		self.b = np.zeros(self.N, dtype=np.float32)
@@ -194,7 +194,7 @@ class Environment:
 
 		self.delta_t = np.random.exponential(self.lamda)
 
-		self.w = np.random.uniform(1.00,4.00)
+		self.w = np.random.uniform(0.100,0.400)
 		
 		self.n = np.random.randint(self.N)
 		# print('n : ', self.n)
@@ -203,7 +203,7 @@ class Environment:
 		d_max = self.w/(self.a + self.c[self.n])
 		self.d = np.random.uniform(d_min, d_max)
 
-		self.s = np.random.uniform(0.5, 2)
+		self.s = np.random.uniform(2.000, 4.000)
 
 		self.b = np.zeros(self.N, dtype=np.float32)
 		self.b[self.n] = self.uplink[self.n]

@@ -1,15 +1,3 @@
-"""
-Actor-Critic using TD-error as the Advantage, Reinforcement Learning.
-
-The cart pole example. Policy is oscillated.
-
-View more on my tutorial page: https://morvanzhou.github.io/tutorials/
-
-Using:
-tensorflow 1.0
-gym 0.8.0
-"""
-
 import numpy as np
 import tensorflow as tf
 from reload_environment import Environment
@@ -20,14 +8,14 @@ tf.set_random_seed(2)  # reproducible
 # Superparameters
 OUTPUT_GRAPH = False
 MAX_EPISODE = 100
-MAX_EP_STEPS = 50   # maximum time step in one episode
+MAX_EP_STEPS = 50   
 GAMMA = 0.9     # reward discount in TD error
 LR_A = 0.001    # learning rate for actor
 LR_C = 0.001     # learning rate for critic
 
 
-class Actor(object):
-    def __init__(self, sess, n_features, n_actions, lr=0.00001):
+class Actor_ac(object):
+    def __init__(self, sess, n_features, n_actions, lr=0.01):
         self.sess = sess
 
         self.s = tf.placeholder(tf.float32, [1, n_features], "state")
@@ -72,7 +60,7 @@ class Actor(object):
         return probs[0] #np.random.choice(np.arange(probs.shape[1]), p=probs.ravel())   # return a int
 
 
-class Critic(object):
+class Critic_ac(object):
     def __init__(self, sess, n_features, n_actions, lr=0.01):
         self.sess = sess
 
@@ -115,51 +103,51 @@ class Critic(object):
                                           {self.s: s, self.v_: v_, self.r: r})
         return td_error
 
+if __name__ == '__main__':
+    env = Environment()
+    N_F = env.state_dim
+    N_A = env.action_dim
 
-env = Environment()
-N_F = env.state_dim
-N_A = env.action_dim
-
-print(env.a, env.N, env.c)
-print(env.g)
+    print(env.a, env.N, env.c)
+    print(env.g)
 
 
 
-sess = tf.Session()
+    sess = tf.Session()
 
-actor = Actor(sess, n_features=N_F, n_actions=N_A, lr=LR_A)
-critic = Critic(sess, n_features=N_F, n_actions=N_A, lr=LR_C)     # we need a good teacher, so the teacher should learn faster than the actor
+    actor = Actor_ac(sess, n_features=N_F, n_actions=N_A, lr=LR_A)
+    critic = Critic_ac(sess, n_features=N_F, n_actions=N_A, lr=LR_C)     # we need a good teacher, so the teacher should learn faster than the actor
 
-sess.run(tf.global_variables_initializer())
+    sess.run(tf.global_variables_initializer())
 
-if OUTPUT_GRAPH:
-    tf.summary.FileWriter("logs/", sess.graph)
+    if OUTPUT_GRAPH:
+        tf.summary.FileWriter("logs/", sess.graph)
 
-for i_episode in range(MAX_EPISODE):
+    for i_episode in range(MAX_EPISODE):
 
-    s = env.reset()
-    track_r = []
+        s = env.reset()
+        track_r = []
 
-    for step in range(MAX_EP_STEPS):
-        
+        for step in range(MAX_EP_STEPS):
+            
 
-        a = actor.choose_action(s)
-        
+            a = actor.choose_action(s)
+            
 
-        s_, r = env.step(a)
+            s_, r = env.step(a)
 
-        track_r.append(r)
+            track_r.append(r)
 
-        td_error = critic.learn(s, r, s_)  # gradient = grad[r + gamma * V(s_) - V(s)]
-        actor.learn(s, a, td_error)     # true_gradient = grad[logPi(s,a) * td_error]
+            td_error = critic.learn(s, r, s_)  # gradient = grad[r + gamma * V(s_) - V(s)]
+            actor.learn(s, a, td_error)     # true_gradient = grad[logPi(s,a) * td_error]
 
-        # print('action probability: ', a, td_error)
-        s = s_
+            # print('action probability: ', a, td_error)
+            s = s_
 
-        if step == MAX_EP_STEPS - 1:
-            print('action probability: ', a)
-            # print('state : ', s)
-            print('reward : ', r)
-            ep_rs_sum = sum(track_r)
-            print('Episode:', i_episode, ' Reward: ', ep_rs_sum)
+            if step == MAX_EP_STEPS - 1:
+                print('action probability: ', a)
+                print('state : ', s)
+                print('reward : ', r)
+                ep_rs_sum = sum(track_r)
+                print('Episode:', i_episode, ' Reward: ', ep_rs_sum)
 

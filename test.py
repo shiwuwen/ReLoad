@@ -28,20 +28,25 @@ import numpy as np
 # print(np.array(list1)*np.array(list2))
 # print(np.matmul(list1,list2))
 
-class test:
-	def __init__(self):
-		self.t = 1
+# class test:
+# 	def __init__(self):
+# 		self.t = 1
 
-	def get_F(self, n):
-		self.F = [1,2,3,4]
-		return self.F
+# 	def get_F(self, n):
+# 		self.F = [1,2,3,4]
+# 		return self.F
 
-	def get_p(self):
+# 	def get_p(self):
 
-		for i in range(len(self.F)):
-			self.F[i] = self.F[i]+1
-		return self.F
+# 		for i in range(len(self.F)):
+# 			self.F[i] = self.F[i]+1
+# 		return self.F
 
-env = test()
-print(env.get_F(1))
-print(env.get_p())
+# env = test()
+# print(env.get_F(1))
+# print(env.get_p())
+
+# np.random.seed(0)
+
+result = np.random.randint(10,size=20)
+print(result)
