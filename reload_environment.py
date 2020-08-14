@@ -91,8 +91,8 @@ class Environment:
 		# print('n : ', self.n)
 
 		#0时刻任务f的deadline
-		d_min = self.w/self.a
-		d_max = self.w/(self.a + self.c[self.n])
+		d_max = self.w/self.a
+		d_min = self.w/(self.a + self.c[self.n])
 		self.d = np.random.uniform(d_min, d_max)
 
 		#0时刻任务f的inputsize  Mbit
@@ -199,8 +199,8 @@ class Environment:
 		self.n = np.random.randint(self.N)
 		# print('n : ', self.n)
 
-		d_min = self.w/self.a
-		d_max = self.w/(self.a + self.c[self.n])
+		d_max = self.w/self.a
+		d_min = self.w/(self.a + self.c[self.n])
 		self.d = np.random.uniform(d_min, d_max)
 
 		self.s = np.random.uniform(2.000, 4.000)
