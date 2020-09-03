@@ -1,5 +1,5 @@
 import numpy as np
-from shortest_path import dijkstra
+from toolbar import dijkstra
 
 #当此行存在时，np.random生成的随机数始终相同，用于比较两个不同算法对于同一输入的不同性能
 # np.random.seed(15)
