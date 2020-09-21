@@ -2,6 +2,9 @@ import numpy as np
 import copy
 
 def dijkstra(v0, cost):
+	'''
+	用于获取图中一点到其余各点的距离
+	'''
 	passed = [v0]
 	nopassed = [x for x in range(len(cost)) if x != v0]
 
@@ -24,9 +27,12 @@ def dijkstra(v0, cost):
 
 	return distance
 
-np.random.seed(1)
+# np.random.seed(1)
 def get_es_propagation_delay(num):
-
+	'''
+	生成服务器间的传播延迟
+	'''
+	np.random.seed(1)
 	g = np.random.uniform(0.010, 0.100,size=(num,num))
 
 	for i in range(num):

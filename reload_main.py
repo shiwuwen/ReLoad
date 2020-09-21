@@ -30,7 +30,7 @@ def rl_ac(env):
 
 		for step in range(MAX_EP_STEPS):
 
-			a = actor_ac.choose_action(s)
+			a = actor_ac.choose_action(s).round(2)
 			# a = np.zeros_like(a_temp)
 			# a[np.argmax(a_temp)] = 1
 
@@ -42,8 +42,8 @@ def rl_ac(env):
 
 			s = s_
 
-			# if step == MAX_EP_STEPS-1:
-			# 	print('action probability: ', a)
+			# if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+			# 	print('action probability of rl_ac: ', a)
 			# 	print('state : ', s)
 			# 	print('reward : ', r)
 			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
@@ -114,7 +114,9 @@ def rl_ddpg(env):
 
 		for step in range(MAX_EP_STEPS):
 
-			a = actor_ddpg.choose_action(s)
+			a_temp = actor_ddpg.choose_action(s).round(2)
+			a = np.zeros_like(a_temp)
+			a[np.argmax(a_temp)] = 1
 			# if i == 0 and step == 0:
 			# 	a = np.zeros(env.action_dim)
 			# 	a[0] = 1
@@ -139,9 +141,9 @@ def rl_ddpg(env):
 
 			# reward.append(r)
 
-			if (i == 0 and step == 0) or (i == MAX_EPISODES-1 and step == MAX_EP_STEPS-1): #if step == MAX_EP_STEPS-1:
+			# if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: #(i == MAX_EPISODES-1 and step == MAX_EP_STEPS-1): ##if step == MAX_EP_STEPS-1:
+			# 	print('action probability of rddpg: ', a)
 				# print('action_ probability: ', a_)
-				print('action probability : ', a)
 				# print('state : ', s)
 				# print('reward : ', r)
 				# print('Episode:', i, ' Reward: %i' % int(ep_reward))
@@ -152,8 +154,8 @@ def rl_ddpg(env):
 
 #####################  hyper parameters  ####################
 
-MAX_EPISODES = 100
-MAX_EP_STEPS = 100
+MAX_EPISODES = 300
+MAX_EP_STEPS = 50
 
 LR_A = 0.001    # learning rate for actor  	0.001
 LR_C = 0.001    # learning rate for critic 	0.001
@@ -169,7 +171,7 @@ BATCH_SIZE = 32
 
 OUTPUT_GRAPH = False
 
-np.random.seed(1)
+# np.random.seed(1)
 
 
 if __name__ == '__main__':
@@ -182,7 +184,7 @@ if __name__ == '__main__':
 
 	
 
-	# rac = rl_ac(env)
+	rac = rl_ac(env)
 	# print('episode reward of ac : ')
 	# print(rac)
 
@@ -199,8 +201,8 @@ if __name__ == '__main__':
 
 	x = [i for i in range(MAX_EPISODES)]
 	plt.figure()
+	plt.plot(x, rac, color='blue')
 	plt.plot(x, rddpg, color='red')
-	# plt.plot(x, rac, color='blue')
 	# plt.plot(x, rlo, color='black')
 
 	plt.show()

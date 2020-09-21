@@ -35,11 +35,13 @@ class Actor_ac(object):
             self.acts_prob = tf.layers.dense(
                 inputs=l1,
                 units=n_actions,    # output units
-                activation=tf.nn.softmax,   # get action probabilities
+                activation=tf.nn.tanh,   # get action probabilities
                 kernel_initializer=tf.random_normal_initializer(0., .1),  # weights
                 bias_initializer=tf.constant_initializer(0.1),  # biases
                 name='acts_prob'
             )
+
+            self.acts = tf.nn.softmax(self.acts_prob)
 
         with tf.variable_scope('exp_v'):
             log_prob = tf.log(self.acts_prob[0])
@@ -56,7 +58,7 @@ class Actor_ac(object):
 
     def choose_action(self, s):
         s = s[np.newaxis, :]
-        probs = self.sess.run(self.acts_prob, {self.s: s})   # get probabilities for all actions
+        probs = self.sess.run(self.acts, {self.s: s})   # get probabilities for all actions
         return probs[0] #np.random.choice(np.arange(probs.shape[1]), p=probs.ravel())   # return a int
 
 

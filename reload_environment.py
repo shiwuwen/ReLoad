@@ -161,7 +161,7 @@ class Environment:
 
 		for i in range(1, self.action_dim):
 			if action[i] > 0:
-				cost += self.shortest_g[self.n, i]
+				cost += self.shortest_g[self.n, i-1]
 
 		# print('propagation delay: ', cost)
 		return cost

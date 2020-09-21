@@ -25,6 +25,9 @@ class Actor_ddpg(object):
             # input s_, output a, get a_ for critic
             self.a_ = self._build_net(self.S_, scope='target_net', trainable=False)
 
+            #返回actions的概率
+            self.acts = tf.nn.softmax(self.a)
+
         self.e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='Actor/eval_net')
         self.t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='Actor/target_net')
 
@@ -43,10 +46,11 @@ class Actor_ddpg(object):
                                   kernel_initializer=init_w, bias_initializer=init_b, name='l1',
                                   trainable=trainable)
             with tf.variable_scope('a'):
-                actions = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, kernel_initializer=init_w,
+                actions = tf.layers.dense(net, self.a_dim, activation=tf.nn.softmax, kernel_initializer=init_w,
                                           bias_initializer=init_b, name='a', trainable=trainable)
                 # scaled_a = tf.multiply(actions, self.action_bound, name='scaled_a')  # Scale output to -action_bound to action_bound
-        return tf.nn.softmax(actions) #scaled_a
+                #self.acts = tf.nn.softmax(actions)
+        return actions #tf.nn.softmax(actions) #scaled_a
 
     def learn(self, s):   # batch update
         self.sess.run(self.train_op, feed_dict={self.S: s})
