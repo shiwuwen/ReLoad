@@ -8,6 +8,8 @@ from reload_environment import Environment
 from reload_rl_DDPG import Actor_ddpg, Critic_ddpg, Memory_ddpg
 from reload_rl_AC import Actor_ac, Critic_ac
 
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "1"
 
 def rl_ac(env):
 	'''
@@ -52,12 +54,12 @@ def rl_ac(env):
 
 			s = s_
 
-			# if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
-			# 	print('action probability of rl_ac: ', a)
+			if step%50==0:#if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', i, ' action probability of rl_ac: ', a)
 			# 	print('state : ', s)
 			# 	print('reward : ', r)
 			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
-		reward.append(ep_reward/MAX_EP_STEPS)
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
 
 	print('Running time of rl_ac: ', time.time()-t1)
 	return reward
@@ -85,7 +87,7 @@ def local_only(env):
 			# 	print('state : ', s)
 			# 	print('reward : ', r)
 			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
-		reward.append(ep_reward/MAX_EP_STEPS)
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
 
 	print('Running time of rl_ac: ', time.time()-t1)
 	return reward 
@@ -162,13 +164,13 @@ def rl_ddpg(env):
 
 			# reward.append(r)
 
-			# if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: #(i == MAX_EPISODES-1 and step == MAX_EP_STEPS-1): ##if step == MAX_EP_STEPS-1:
-			# 	print('action probability of rddpg: ', a)
+			if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: #(i == MAX_EPISODES-1 and step == MAX_EP_STEPS-1): ##if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', i,' action probability of rddpg: ', a)
 				# print('action_ probability: ', a_)
 				# print('state : ', s)
 				# print('reward : ', r)
 				# print('Episode:', i, ' Reward: %i' % int(ep_reward))
-		reward.append(ep_reward/MAX_EP_STEPS)
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
 
 	print('Running time of rl_ddpg: ', time.time()-t1)
 	return reward
@@ -176,8 +178,8 @@ def rl_ddpg(env):
 #####################  hyper parameters  ####################
 
 #当EPISODES较大，STEPS较小时能获得较好效果
-MAX_EPISODES = 300
-MAX_EP_STEPS = 50
+MAX_EPISODES = 200
+MAX_EP_STEPS = 200
 
 LR_A = 0.001    # learning rate for actor  	0.001
 LR_C = 0.001    # learning rate for critic 	0.001
@@ -214,13 +216,13 @@ if __name__ == '__main__':
 	
 	#action-critic算法
 	rac = rl_ac(env)
-	# print('episode reward of ac : ')
-	# print(rac)
+	print('episode reward of ac : ')
+	print(rac)
 
 	#ddpg算法
 	rddpg = rl_ddpg(env)
-	# print('episode reward of ddpg : ')
-	# print(rddpg)
+	print('episode reward of ddpg : ')
+	print(rddpg)
 
 	#local-only算法
 	# rlo = local_only(env)
@@ -231,12 +233,12 @@ if __name__ == '__main__':
 	# print(y)
 
 	#绘制reward图表
-	x = [i for i in range(MAX_EPISODES)]
-	plt.figure()
-	plt.plot(x, rac, color='blue')
-	plt.plot(x, rddpg, color='red')
-	# plt.plot(x, rlo, color='black')
+	# x = [i for i in range(MAX_EPISODES)]
+	# plt.figure()
+	# plt.plot(x, rac, color='blue')
+	# plt.plot(x, rddpg, color='red')
+	# # plt.plot(x, rlo, color='black')
 
-	plt.show()
+	# plt.show()
 
 	print('ok')
