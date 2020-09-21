@@ -26,7 +26,7 @@ class Actor_ddpg(object):
             self.a_ = self._build_net(self.S_, scope='target_net', trainable=False)
 
             #返回actions的概率
-            self.acts = tf.nn.softmax(self.a)
+            # self.acts = tf.nn.softmax(self.a)
 
         self.e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='Actor/eval_net')
         self.t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='Actor/target_net')
@@ -136,6 +136,7 @@ class Critic_ddpg(object):
                 net = tf.nn.relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
 
             with tf.variable_scope('q'):
+                #输出维度为self.a_dim时actor网络的softmax能够正常运行，不会导致NAN错误
                 q = tf.layers.dense(net, self.a_dim, kernel_initializer=init_w, bias_initializer=init_b, trainable=trainable)   # Q(s,a)
         return q
 

@@ -10,16 +10,22 @@ from reload_rl_AC import Actor_ac, Critic_ac
 
 
 def rl_ac(env):
+	'''
+	使用actor-critic算法实现actions的决策生成
+	'''
 
 	reward = []
 
 	sess = tf.Session()
 
+	#actor网络
 	actor_ac = Actor_ac(sess, state_dim, action_dim, LR_A)
+	#critic网络
 	critic_ac = Critic_ac(sess, state_dim, action_dim, LR_C)
 
 	sess.run(tf.global_variables_initializer())
 
+	#if true，输出graph
 	if OUTPUT_GRAPH:
 		tf.summary.FileWriter('./logs/', sess.graph)
 
@@ -30,13 +36,17 @@ def rl_ac(env):
 
 		for step in range(MAX_EP_STEPS):
 
+			#返回actions，并保留两位小数
 			a = actor_ac.choose_action(s).round(2)
 			# a = np.zeros_like(a_temp)
 			# a[np.argmax(a_temp)] = 1
 
+			#获取state_和reward
 			s_, r = env.step(a)
+			#一个训练周期的reward之和
 			ep_reward += r
 
+			#训练
 			td_error = critic_ac.learn(s, r, s_)
 			actor_ac.learn(s, a, td_error)
 
@@ -82,6 +92,9 @@ def local_only(env):
 
 
 def rl_ddpg(env):
+	'''
+	使用ddpg算法生成二进制决策算法
+	'''
 
 	reward = []
 
@@ -94,12 +107,14 @@ def rl_ddpg(env):
 
 	sess = tf.Session()
 
+	#生成网络
 	actor_ddpg = Actor_ddpg(sess, action_dim, LR_A, REPLACEMENT, S, R, S_)
 	critic_ddpg = Critic_ddpg(sess, state_dim, action_dim, LR_C, GAMMA, REPLACEMENT, actor_ddpg.a, actor_ddpg.a_, S, R, S_)
 	actor_ddpg.add_grad_to_graph(critic_ddpg.a_grads)
 
 	sess.run(tf.global_variables_initializer())
 
+	#更新记忆库
 	M = Memory_ddpg(MEMORY_CAPACITY, dims=2 * state_dim + action_dim + 1)
 
 	# print('OUTPUT_GRAPH: ' , OUTPUT_GRAPH)
@@ -109,12 +124,15 @@ def rl_ddpg(env):
 
 	t1 = time.time()
 	for i in range(MAX_EPISODES):
+		#初始化
 		s = env.reset()
 		ep_reward = 0
 
 		for step in range(MAX_EP_STEPS):
 
+			#获取actions，并保留两位小数
 			a_temp = actor_ddpg.choose_action(s).round(2)
+			#将数组转换为one_hot数组
 			a = np.zeros_like(a_temp)
 			a[np.argmax(a_temp)] = 1
 			# if i == 0 and step == 0:
@@ -122,10 +140,13 @@ def rl_ddpg(env):
 			# 	a[0] = 1
 			# a = sess.run(tf.nn.softmax(a_))
 
+			#获取state_, reward
 			s_, r = env.step(a)
 
+			#存储训练数据
 			M.store_transition(s, a, r, s_)
 
+			#当存储数据大于阈值时开始训练
 			if M.pointer > MEMORY_CAPACITY:
 				b_M = M.sample(BATCH_SIZE)
 				b_s = b_M[:, :state_dim]
@@ -154,6 +175,7 @@ def rl_ddpg(env):
 
 #####################  hyper parameters  ####################
 
+#当EPISODES较大，STEPS较小时能获得较好效果
 MAX_EPISODES = 300
 MAX_EP_STEPS = 50
 
@@ -161,37 +183,46 @@ LR_A = 0.001    # learning rate for actor  	0.001
 LR_C = 0.001    # learning rate for critic 	0.001
 GAMMA = 0.9     # reward discount
 
+#ddpg的网络参数更新方式
 REPLACEMENT = [
     dict(name='soft', tau=0.01),
     dict(name='hard', rep_iter_a=600, rep_iter_c=500)
 ][0]            # you can try different target replacement strategies
-
+#ddpg的记忆库大小
 MEMORY_CAPACITY = 1000
 BATCH_SIZE = 32
 
+#是否输出graph
 OUTPUT_GRAPH = False
 
+#使用该代码将使随机数可以预测，使用1时将使N固定为9
 # np.random.seed(1)
 
 
 if __name__ == '__main__':
+
+	#初始化环境
 	env = Environment()
+	#获取状态空间和动作空间的维度
 	state_dim = env.state_dim
 	action_dim = env.action_dim
 
+	#输出环境的基本信息，包括 用户设备的计算能力 边缘服务器的数量 N个边缘服务器的计算能力
 	print(env.a, env.N, env.c)
 	# print(env.g)
 
 	
-
+	#action-critic算法
 	rac = rl_ac(env)
 	# print('episode reward of ac : ')
 	# print(rac)
 
+	#ddpg算法
 	rddpg = rl_ddpg(env)
 	# print('episode reward of ddpg : ')
 	# print(rddpg)
 
+	#local-only算法
 	# rlo = local_only(env)
 	# print('episode reward of local only : ')
 	# print(rlo)
@@ -199,6 +230,7 @@ if __name__ == '__main__':
 	# y = (rddpg - np.mean(rddpg)) / np.std(rddpg)
 	# print(y)
 
+	#绘制reward图表
 	x = [i for i in range(MAX_EPISODES)]
 	plt.figure()
 	plt.plot(x, rac, color='blue')

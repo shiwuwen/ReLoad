@@ -41,6 +41,7 @@ class Actor_ac(object):
                 name='acts_prob'
             )
 
+            #使用softmax将结果转换为概率，同时能够进行探索
             self.acts = tf.nn.softmax(self.acts_prob)
 
         with tf.variable_scope('exp_v'):
