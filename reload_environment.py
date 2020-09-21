@@ -50,6 +50,9 @@ class Environment:
 		return g
 
 	def _get_shortest_es_delay(self, cost):
+		'''
+		获取任意两个服务器之间的最短传播延迟
+		'''
 		delay = []
 		for v0 in range(len(cost)):
 			result = dijkstra(v0, cost)
@@ -156,7 +159,7 @@ class Environment:
 		'''
 		cost = 0
 
-		for i in range(self.action_dim-1):
+		for i in range(1, self.action_dim):
 			if action[i] > 0:
 				cost += self.shortest_g[self.n, i]
 
@@ -167,10 +170,12 @@ class Environment:
 		'''
 		计算用户设备或边缘服务器完成各自分配任务所需的时间
 		'''
+		#本地任务时间等于本地完成任务的时间减去任务在服务器间传播的时间
 		user_time = (self.P[0] + action[0]*self.w) / self.a - t2
 
 		server_time = []
-		for i in range(1,self.N+1):
+		for i in range(1, self.action_dim):
+			#任务量除以边缘服务器计算能力
 			result = (self.P[i]+action[i]*self.w) / self.c[i-1]
 			server_time.append(result)
 		server_time_max = np.max(server_time)
