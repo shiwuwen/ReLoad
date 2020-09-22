@@ -62,6 +62,38 @@ def rl_ac(env):
 	print('Running time of rl_ac: ', time.time()-t1)
 	return reward
 
+def rl_choose_by_uplink_b(env):
+	rewrad = []
+
+	a = np.zeros_like([action_dim], dtype=np.int)
+
+	t1 = time.time()
+	for i in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0
+
+		for step in range(MAX_EP_STEPS):
+			b = s[3:env.N+3]
+			a[np.argmax(b)] = 1
+
+			s_, r = env.step(a)
+
+			ep_reward += r
+
+			s = s_
+
+			# if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+			# 	print('action probability of rl_ac: ', a)
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(ep_reward/MAX_EP_STEPS)
+
+	print('Running time of rl_ac: ', time.time()-t1)
+	return reward
+
+
+
 def local_only(env):
 	reward = []
 
