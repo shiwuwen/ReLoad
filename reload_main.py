@@ -8,8 +8,38 @@ from reload_environment import Environment
 from reload_rl_DDPG import Actor_ddpg, Critic_ddpg, Memory_ddpg
 from reload_rl_AC import Actor_ac, Critic_ac
 
+#是否使用GPU，0使用，-1不使用
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
+
+def local_only(env):
+	reward = []
+
+	a = np.zeros([action_dim], dtype=np.int)
+	a[0] = 1
+
+	t1 = time.time()
+	for episode in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0 
+
+		for step in range(MAX_EP_STEPS):
+			s_ , r = env.step(a)
+
+			ep_reward += r
+
+			s = s_
+
+			# if step == MAX_EP_STEPS-1:
+			# 	print('action probability: ', a)
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
+
+	print('Running time of rl_ac: ', time.time()-t1)
+	return reward 
+
 
 def rl_ac(env):
 	'''
@@ -32,14 +62,23 @@ def rl_ac(env):
 		tf.summary.FileWriter('./logs/', sess.graph)
 
 	t1 = time.time()
-	for i in range(MAX_EPISODES):
+	for episode in range(MAX_EPISODES):
 		s = env.reset()
 		ep_reward = 0
 
 		for step in range(MAX_EP_STEPS):
 
-			#返回actions，并保留两位小数
-			a = actor_ac.choose_action(s).round(2)
+			#返回actions
+			a = actor_ac.choose_action(s)
+
+			#使用超参数bound对action进行裁减
+			for j in range(action_dim):
+				if a[j]<=bound:
+					a[np.argmax(a)] += a[j]
+					a[j] = 0
+
+			#保留两位小数
+			a = a.round(2)
 			# a = np.zeros_like(a_temp)
 			# a[np.argmax(a_temp)] = 1
 
@@ -55,7 +94,7 @@ def rl_ac(env):
 			s = s_
 
 			if step%50==0:#if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
-				print('EPISODE: ', i, ' action probability of rl_ac: ', a)
+				print('EPISODE: ', episode, ' action probability of rl_ac: ', a)
 			# 	print('state : ', s)
 			# 	print('reward : ', r)
 			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
@@ -64,19 +103,22 @@ def rl_ac(env):
 	print('Running time of rl_ac: ', time.time()-t1)
 	return reward
 
-def rl_choose_by_uplink_b(env):
-	rewrad = []
 
-	a = np.zeros_like([action_dim], dtype=np.int)
+def rl_choose_by_uplink_b(env):
+	'''
+	选择用户当前所在的位置的服务器进行卸载
+	'''
+	reward = []
 
 	t1 = time.time()
-	for i in range(MAX_EPISODES):
+	for episode in range(MAX_EPISODES):
 		s = env.reset()
 		ep_reward = 0
 
 		for step in range(MAX_EP_STEPS):
+			a = np.zeros([action_dim], dtype=np.int)
 			b = s[3:env.N+3]
-			a[np.argmax(b)] = 1
+			a[np.argmax(b)+1] = 1
 
 			s_, r = env.step(a)
 
@@ -84,45 +126,15 @@ def rl_choose_by_uplink_b(env):
 
 			s = s_
 
-			# if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
-			# 	print('action probability of rl_ac: ', a)
-			# 	print('state : ', s)
-			# 	print('reward : ', r)
-			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
-		reward.append(ep_reward/MAX_EP_STEPS)
-
-	print('Running time of rl_ac: ', time.time()-t1)
-	return reward
-
-
-
-def local_only(env):
-	reward = []
-
-	a = np.zeros([action_dim], dtype=np.int)
-	a[0] = 1
-
-	t1 = time.time()
-	for i in range(MAX_EPISODES):
-		s = env.reset()
-		ep_reward = 0 
-
-		for step in range(MAX_EP_STEPS):
-			s_ , r = env.step(a)
-
-			ep_reward += r
-
-			s = s_
-
-			# if step == MAX_EP_STEPS-1:
-			# 	print('action probability: ', a)
+			if step%50==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode, 'action probability of rlb: ', a)
 			# 	print('state : ', s)
 			# 	print('reward : ', r)
 			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
 		reward.append(round(ep_reward/MAX_EP_STEPS,2))
 
-	print('Running time of rl_ac: ', time.time()-t1)
-	return reward 
+	print('Running time of rl_choose_by_uplink_b: ', time.time()-t1)
+	return reward
 
 
 def rl_ddpg(env):
@@ -157,7 +169,7 @@ def rl_ddpg(env):
 		tf.summary.FileWriter("logs/", sess.graph)
 
 	t1 = time.time()
-	for i in range(MAX_EPISODES):
+	for episode in range(MAX_EPISODES):
 		#初始化
 		s = env.reset()
 		ep_reward = 0
@@ -196,8 +208,8 @@ def rl_ddpg(env):
 
 			# reward.append(r)
 
-			if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: #(i == MAX_EPISODES-1 and step == MAX_EP_STEPS-1): ##if step == MAX_EP_STEPS-1:
-				print('EPISODE: ', i,' action probability of rddpg: ', a)
+			if (episode == 0 and step == 0) or step == MAX_EP_STEPS-1: #(i == MAX_EPISODES-1 and step == MAX_EP_STEPS-1): ##if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode,' action probability of rddpg: ', a)
 				# print('action_ probability: ', a_)
 				# print('state : ', s)
 				# print('reward : ', r)
@@ -210,8 +222,8 @@ def rl_ddpg(env):
 #####################  hyper parameters  ####################
 
 #当EPISODES较大，STEPS较小时能获得较好效果
-MAX_EPISODES = 200
-MAX_EP_STEPS = 200
+MAX_EPISODES = 220
+MAX_EP_STEPS = 100
 
 LR_A = 0.001    # learning rate for actor  	0.001
 LR_C = 0.001    # learning rate for critic 	0.001
@@ -229,6 +241,10 @@ BATCH_SIZE = 32
 #是否输出graph
 OUTPUT_GRAPH = False
 
+#对rl_ac的action空间进行裁减，确保分配的任务不少于bound
+#该参数能显著改善性能，且N越大，bound应当越小
+bound = 0.09
+
 #使用该代码将使随机数可以预测，使用1时将使N固定为9
 # np.random.seed(1)
 
@@ -245,32 +261,36 @@ if __name__ == '__main__':
 	print(env.a, env.N, env.c)
 	# print(env.g)
 
-	
-	#action-critic算法
-	rac = rl_ac(env)
-	print('episode reward of ac : ')
-	print(rac)
-
-	#ddpg算法
-	rddpg = rl_ddpg(env)
-	print('episode reward of ddpg : ')
-	print(rddpg)
-
 	#local-only算法
 	# rlo = local_only(env)
 	# print('episode reward of local only : ')
 	# print(rlo)
+
+	#action-critic算法
+	rac = rl_ac(env)
+	# print('episode reward of ac : ')
+	# print(rac)
+
+	#ddpg算法
+	rddpg = rl_ddpg(env)
+	# print('episode reward of ddpg : ')
+	# print(rddpg)
+
+	#rl_choose_by_uplink_b
+	rlb = rl_choose_by_uplink_b(env)
+	# print('episode reward of rlb : ')
+	# print(rlb)
 	
 	# y = (rddpg - np.mean(rddpg)) / np.std(rddpg)
 	# print(y)
 
 	#绘制reward图表
-	# x = [i for i in range(MAX_EPISODES)]
-	# plt.figure()
-	# plt.plot(x, rac, color='blue')
-	# plt.plot(x, rddpg, color='red')
-	# # plt.plot(x, rlo, color='black')
+	x = [i-20 for i in range(20, MAX_EPISODES)]
+	plt.figure()
+	plt.plot(x, rac[20:], color='blue')
+	plt.plot(x, rddpg[20:], color='red')
+	plt.plot(x, rlb[20:], color='green')
 
-	# plt.show()
+	plt.show()
 
 	print('ok')
