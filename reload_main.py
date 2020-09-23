@@ -126,7 +126,7 @@ def rl_choose_by_uplink_b(env):
 
 			s = s_
 
-			if step%50==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+			if episode%20==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
 				print('EPISODE: ', episode, 'action probability of rlb: ', a)
 			# 	print('state : ', s)
 			# 	print('reward : ', r)
@@ -134,6 +134,45 @@ def rl_choose_by_uplink_b(env):
 		reward.append(round(ep_reward/MAX_EP_STEPS,2))
 
 	print('Running time of rl_choose_by_uplink_b: ', time.time()-t1)
+	return reward
+
+
+def rl_choose_by_pending_queue(env):
+	'''
+	基于等待队列来选择服务器，选择等待队列最小的服务器
+	大多数时间等待队列都为空，相当于随机选择服务器
+	'''
+	reward = []
+
+	t1 = time.time()
+	for episode in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0
+
+		for step in range(MAX_EP_STEPS):
+			a = np.zeros([action_dim], dtype=np.int32)
+			pendingQ = s[env.N+3:]
+			#当过个服务器等待队列相同时，从这些服务器中随机选择
+			temp = [i for i in range(len(pendingQ)) if pendingQ[i] == np.min(pendingQ)]
+			index = np.random.choice(temp)
+			# print(pendingQ[pendingQ == np.min(pendingQ)].tolist().index())
+			a[index] = 1
+
+			s_, r = env.step(a)
+
+			ep_reward += r
+
+			s = s_
+
+			if episode%20==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode, 'action probability of rlq: ', a)
+				print('pendingQ: ' ,pendingQ)
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
+
+	print('Running time of rl_choose_by_pending_queue: ', time.time()-t1)
 	return reward
 
 
@@ -243,6 +282,7 @@ OUTPUT_GRAPH = False
 
 #对rl_ac的action空间进行裁减，确保分配的任务不少于bound
 #该参数能显著改善性能，且N越大，bound应当越小
+#当N=(5,10)时，0.07可能出现负优化，0.09有较好效果；过大会退化为二进制策略
 bound = 0.09
 
 #使用该代码将使随机数可以预测，使用1时将使N固定为9
@@ -266,30 +306,49 @@ if __name__ == '__main__':
 	# print('episode reward of local only : ')
 	# print(rlo)
 
+
 	#action-critic算法
 	rac = rl_ac(env)
 	# print('episode reward of ac : ')
 	# print(rac)
+
 
 	#ddpg算法
 	rddpg = rl_ddpg(env)
 	# print('episode reward of ddpg : ')
 	# print(rddpg)
 
+
 	#rl_choose_by_uplink_b
-	rlb = rl_choose_by_uplink_b(env)
+	# rlb = rl_choose_by_uplink_b(env)
 	# print('episode reward of rlb : ')
 	# print(rlb)
+
+
+	#rl_choose_by_pending_queue
+	# rlq = rl_choose_by_pending_queue(env)
+	# print('episode reward of rlq : ')
+	# print(rlq)
 	
+
 	# y = (rddpg - np.mean(rddpg)) / np.std(rddpg)
 	# print(y)
 
-	#绘制reward图表
+	# #绘制reward图表，去除开始时的不稳定的迭代期
 	x = [i-20 for i in range(20, MAX_EPISODES)]
 	plt.figure()
 	plt.plot(x, rac[20:], color='blue')
 	plt.plot(x, rddpg[20:], color='red')
-	plt.plot(x, rlb[20:], color='green')
+	# plt.plot(x, rlb[20:], color='green')
+	# plt.plot(x, rlq[20:], color='yellow')
+
+	#绘制reward图表
+	# x = [i for i in range(MAX_EPISODES)]
+	# plt.figure()
+	# plt.plot(x, rac, color='blue')
+	# plt.plot(x, rddpg, color='red')
+	# plt.plot(x, rlb, color='green')
+	# plt.plot(x, rlq, color='yellow')
 
 	plt.show()
 
