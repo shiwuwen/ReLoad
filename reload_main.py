@@ -1,3 +1,5 @@
+#coding=utf-8
+
 import tensorflow as tf 
 import numpy as np
 import time
@@ -41,7 +43,7 @@ def local_only(env):
 	return reward 
 
 
-def rl_ac(env):
+def rl_ac(env, bound=0):
 	'''
 	使用actor-critic算法实现actions的决策生成
 	'''
@@ -166,13 +168,51 @@ def rl_choose_by_pending_queue(env):
 
 			if episode%20==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
 				print('EPISODE: ', episode, 'action probability of rlq: ', a)
-				print('pendingQ: ' ,pendingQ)
+				# print('pendingQ: ' ,pendingQ)
 			# 	print('state : ', s)
 			# 	print('reward : ', r)
 			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
 		reward.append(round(ep_reward/MAX_EP_STEPS,2))
 
 	print('Running time of rl_choose_by_pending_queue: ', time.time()-t1)
+	return reward
+
+
+def rl_choose_by_uplinkb_and_pendingqueue(env):
+	reward = []
+
+	t1 = time.time()
+	for episode in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0
+
+		for step in range(MAX_EP_STEPS):
+			a = np.zeros([action_dim], dtype=np.float32)
+			b = s[3:env.N+3]
+			a[np.argmax(b)+1] += 0.5
+
+			pendingQ = s[env.N+3:]
+			#当多个服务器等待队列相同时，从这些服务器中随机选择
+			temp = [i for i in range(len(pendingQ)) if pendingQ[i] == np.min(pendingQ)]
+			index = np.random.choice(temp)
+			# print(pendingQ[pendingQ == np.min(pendingQ)].tolist().index())
+			a[index] += 0.5
+
+			s_, r = env.step(a)
+
+			ep_reward += r
+
+			s = s_
+
+			if episode%20==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode, 'action probability of rlbq: ', a)
+				
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
+
+	print('Running time of rl_choose_by_uplinkb_and_pendingqueue: ', time.time()-t1)
 	return reward
 
 
@@ -283,10 +323,16 @@ OUTPUT_GRAPH = False
 #对rl_ac的action空间进行裁减，确保分配的任务不少于bound
 #该参数能显著改善性能，且N越大，bound应当越小
 #当N=(5,10)时，0.07可能出现负优化，0.09有较好效果；过大会退化为二进制策略
-bound = 0.09
+clip_bound = 0.09
 
 #使用该代码将使随机数可以预测，使用1时将使N固定为9
-# np.random.seed(1)
+#n-0:badresult  n-1:goodresult
+#5: 2-1(quxiaohao), 5-1(quxianhao**), 9-0, 11-1(quxianhao**), 18-0, 21-1
+#6: 3-1(quxianhao**), 4-0, 7-0, 8-1, 12-0, 16-0, 17-0
+#7: 13-0, 19-1, 
+#8: 6-1, 
+#9: 1-0, 10-1, 14-1, 15-1, 20-1, 22-0
+np.random.seed(11)
 
 
 if __name__ == '__main__':
@@ -308,7 +354,11 @@ if __name__ == '__main__':
 
 
 	#action-critic算法
-	rac = rl_ac(env)
+	rac = rl_ac(env, clip_bound)
+
+	#重置计算图
+	# tf.reset_default_graph()
+	# rac_bound_0 = rl_ac(env)
 	# print('episode reward of ac : ')
 	# print(rac)
 
@@ -320,7 +370,7 @@ if __name__ == '__main__':
 
 
 	#rl_choose_by_uplink_b
-	# rlb = rl_choose_by_uplink_b(env)
+	rlb = rl_choose_by_uplink_b(env)
 	# print('episode reward of rlb : ')
 	# print(rlb)
 
@@ -331,24 +381,36 @@ if __name__ == '__main__':
 	# print(rlq)
 	
 
+	#rl_choose_by_uplinkb_and_pendingqueue
+	# rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
+	# print('episode reward of rlbq : ')
+	# print(rlbq)
+
 	# y = (rddpg - np.mean(rddpg)) / np.std(rddpg)
 	# print(y)
 
 	# #绘制reward图表，去除开始时的不稳定的迭代期
-	x = [i-20 for i in range(20, MAX_EPISODES)]
-	plt.figure()
-	plt.plot(x, rac[20:], color='blue')
-	plt.plot(x, rddpg[20:], color='red')
+	# x = [i-20 for i in range(20, MAX_EPISODES)]
+	# plt.figure()
+	# plt.plot(x, rac[20:], color='blue')
+	# plt.plot(x, rddpg[20:], color='red')
 	# plt.plot(x, rlb[20:], color='green')
 	# plt.plot(x, rlq[20:], color='yellow')
 
 	#绘制reward图表
-	# x = [i for i in range(MAX_EPISODES)]
-	# plt.figure()
-	# plt.plot(x, rac, color='blue')
-	# plt.plot(x, rddpg, color='red')
-	# plt.plot(x, rlb, color='green')
-	# plt.plot(x, rlq, color='yellow')
+	x = [i for i in range(MAX_EPISODES)]
+	plt.figure()
+	plt.plot(x, rac, color='blue', label='reload')
+	# plt.plot(x, rac_bound_0, color='orange', label='reload_nobound')
+	plt.plot(x, rddpg, color='red', label='rddpg')
+	plt.plot(x, rlb, color='green', label='rlb')
+	# plt.plot(x, rlq, color='cyan', label='rlq')
+	# plt.plot(x, rlbq, color='grey', label='rlbq')
+
+	plt.legend()
+
+	plt.xlabel('EPISODE')
+	plt.ylabel('REWARD')
 
 	plt.show()
 

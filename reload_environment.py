@@ -17,7 +17,7 @@ class Environment:
 	def __init__(self):
 		#用户设备的计算能力 GHz
 		self.a = np.random.uniform(0.010,0.040)
-		#边缘服务器的数量 [5,10], [10,20]
+		#边缘服务器的数量 [5,10), [10,20)
 		self.N = np.random.randint(5,10)
 		#N个边缘服务器的计算能力 GHz
 		self.c = np.random.uniform(0.100,0.200, size=self.N)
