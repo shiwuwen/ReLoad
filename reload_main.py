@@ -332,7 +332,7 @@ clip_bound = 0.09
 #7: 13-0, 19-1, 
 #8: 6-1, 
 #9: 1-0, 10-1, 14-1, 15-1, 20-1, 22-0
-np.random.seed(11)
+np.random.seed(5)
 
 
 if __name__ == '__main__':
@@ -364,25 +364,25 @@ if __name__ == '__main__':
 
 
 	#ddpg算法
-	rddpg = rl_ddpg(env)
+	# rddpg = rl_ddpg(env)
 	# print('episode reward of ddpg : ')
 	# print(rddpg)
 
 
-	#rl_choose_by_uplink_b
+	# rl_choose_by_uplink_b
 	rlb = rl_choose_by_uplink_b(env)
 	# print('episode reward of rlb : ')
 	# print(rlb)
 
 
 	#rl_choose_by_pending_queue
-	# rlq = rl_choose_by_pending_queue(env)
+	rlq = rl_choose_by_pending_queue(env)
 	# print('episode reward of rlq : ')
 	# print(rlq)
 	
 
 	#rl_choose_by_uplinkb_and_pendingqueue
-	# rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
+	rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
 	# print('episode reward of rlbq : ')
 	# print(rlbq)
 
@@ -402,10 +402,10 @@ if __name__ == '__main__':
 	plt.figure()
 	plt.plot(x, rac, color='blue', label='reload')
 	# plt.plot(x, rac_bound_0, color='orange', label='reload_nobound')
-	plt.plot(x, rddpg, color='red', label='rddpg')
+	# plt.plot(x, rddpg, color='red', label='rddpg')
 	plt.plot(x, rlb, color='green', label='rlb')
-	# plt.plot(x, rlq, color='cyan', label='rlq')
-	# plt.plot(x, rlbq, color='grey', label='rlbq')
+	plt.plot(x, rlq, color='cyan', label='rlq')
+	plt.plot(x, rlbq, color='grey', label='rlbq')
 
 	plt.legend()
 
