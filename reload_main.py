@@ -403,9 +403,9 @@ if __name__ == '__main__':
 	plt.plot(x, rac, color='blue', label='reload')
 	# plt.plot(x, rac_bound_0, color='orange', label='reload_nobound')
 	# plt.plot(x, rddpg, color='red', label='rddpg')
-	plt.plot(x, rlb, color='green', label='rlb')
-	plt.plot(x, rlq, color='cyan', label='rlq')
-	plt.plot(x, rlbq, color='grey', label='rlbq')
+	plt.plot(x, rlb, color='green', label='SS-B')
+	plt.plot(x, rlq, color='cyan', label='SS-W')
+	plt.plot(x, rlbq, color='grey', label='DS-BW')
 
 	plt.legend()
 
