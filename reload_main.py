@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from reload_environment import Environment
 from reload_rl_DDPG import Actor_ddpg, Critic_ddpg, Memory_ddpg
 from reload_rl_AC import Actor_ac, Critic_ac
+import toolbar
 
 #是否使用GPU，0使用，-1不使用
 import os
@@ -41,179 +42,6 @@ def local_only(env):
 
 	print('Running time of rl_ac: ', time.time()-t1)
 	return reward 
-
-
-def rl_ac(env, bound=0):
-	'''
-	使用actor-critic算法实现actions的决策生成
-	'''
-
-	reward = []
-
-	sess = tf.Session()
-
-	#actor网络
-	actor_ac = Actor_ac(sess, state_dim, action_dim, LR_A)
-	#critic网络
-	critic_ac = Critic_ac(sess, state_dim, action_dim, LR_C)
-
-	sess.run(tf.global_variables_initializer())
-
-	#if true，输出graph
-	if OUTPUT_GRAPH:
-		tf.summary.FileWriter('./logs/', sess.graph)
-
-	t1 = time.time()
-	for episode in range(MAX_EPISODES):
-		s = env.reset()
-		ep_reward = 0
-
-		for step in range(MAX_EP_STEPS):
-
-			#返回actions
-			a = actor_ac.choose_action(s)
-
-			#使用超参数bound对action进行裁减
-			for j in range(action_dim):
-				if a[j]<=bound:
-					a[np.argmax(a)] += a[j]
-					a[j] = 0
-
-			#保留两位小数
-			a = a.round(2)
-			# a = np.zeros_like(a_temp)
-			# a[np.argmax(a_temp)] = 1
-
-			#获取state_和reward
-			s_, r = env.step(a)
-			#一个训练周期的reward之和
-			ep_reward += r
-
-			#训练
-			td_error = critic_ac.learn(s, r, s_)
-			actor_ac.learn(s, a, td_error)
-
-			s = s_
-
-			if step%50==0:#if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
-				print('EPISODE: ', episode, ' action probability of rl_ac: ', a)
-			# 	print('state : ', s)
-			# 	print('reward : ', r)
-			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
-		reward.append(round(ep_reward/MAX_EP_STEPS,2))
-
-	print('Running time of rl_ac: ', time.time()-t1)
-	return reward
-
-
-def rl_choose_by_uplink_b(env):
-	'''
-	选择用户当前所在的位置的服务器进行卸载
-	'''
-	reward = []
-
-	t1 = time.time()
-	for episode in range(MAX_EPISODES):
-		s = env.reset()
-		ep_reward = 0
-
-		for step in range(MAX_EP_STEPS):
-			a = np.zeros([action_dim], dtype=np.int)
-			b = s[3:env.N+3]
-			a[np.argmax(b)+1] = 1
-
-			s_, r = env.step(a)
-
-			ep_reward += r
-
-			s = s_
-
-			if episode%20==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
-				print('EPISODE: ', episode, 'action probability of rlb: ', a)
-			# 	print('state : ', s)
-			# 	print('reward : ', r)
-			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
-		reward.append(round(ep_reward/MAX_EP_STEPS,2))
-
-	print('Running time of rl_choose_by_uplink_b: ', time.time()-t1)
-	return reward
-
-
-def rl_choose_by_pending_queue(env):
-	'''
-	基于等待队列来选择服务器，选择等待队列最小的服务器
-	大多数时间等待队列都为空，相当于随机选择服务器
-	'''
-	reward = []
-
-	t1 = time.time()
-	for episode in range(MAX_EPISODES):
-		s = env.reset()
-		ep_reward = 0
-
-		for step in range(MAX_EP_STEPS):
-			a = np.zeros([action_dim], dtype=np.int32)
-			pendingQ = s[env.N+3:]
-			#当过个服务器等待队列相同时，从这些服务器中随机选择
-			temp = [i for i in range(len(pendingQ)) if pendingQ[i] == np.min(pendingQ)]
-			index = np.random.choice(temp)
-			# print(pendingQ[pendingQ == np.min(pendingQ)].tolist().index())
-			a[index] = 1
-
-			s_, r = env.step(a)
-
-			ep_reward += r
-
-			s = s_
-
-			if episode%20==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
-				print('EPISODE: ', episode, 'action probability of rlq: ', a)
-				# print('pendingQ: ' ,pendingQ)
-			# 	print('state : ', s)
-			# 	print('reward : ', r)
-			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
-		reward.append(round(ep_reward/MAX_EP_STEPS,2))
-
-	print('Running time of rl_choose_by_pending_queue: ', time.time()-t1)
-	return reward
-
-
-def rl_choose_by_uplinkb_and_pendingqueue(env):
-	reward = []
-
-	t1 = time.time()
-	for episode in range(MAX_EPISODES):
-		s = env.reset()
-		ep_reward = 0
-
-		for step in range(MAX_EP_STEPS):
-			a = np.zeros([action_dim], dtype=np.float32)
-			b = s[3:env.N+3]
-			a[np.argmax(b)+1] += 0.5
-
-			pendingQ = s[env.N+3:]
-			#当多个服务器等待队列相同时，从这些服务器中随机选择
-			temp = [i for i in range(len(pendingQ)) if pendingQ[i] == np.min(pendingQ)]
-			index = np.random.choice(temp)
-			# print(pendingQ[pendingQ == np.min(pendingQ)].tolist().index())
-			a[index] += 0.5
-
-			s_, r = env.step(a)
-
-			ep_reward += r
-
-			s = s_
-
-			if episode%20==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
-				print('EPISODE: ', episode, 'action probability of rlbq: ', a)
-				
-			# 	print('state : ', s)
-			# 	print('reward : ', r)
-			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
-		reward.append(round(ep_reward/MAX_EP_STEPS,2))
-
-	print('Running time of rl_choose_by_uplinkb_and_pendingqueue: ', time.time()-t1)
-	return reward
 
 
 def rl_ddpg(env):
@@ -298,12 +126,236 @@ def rl_ddpg(env):
 	print('Running time of rl_ddpg: ', time.time()-t1)
 	return reward
 
+
+def rl_ac(env, bound=0):
+	'''
+	使用actor-critic算法实现actions的决策生成
+	'''
+	actionList = []
+	reward = []
+
+	sess = tf.Session()
+
+	#actor网络
+	actor_ac = Actor_ac(sess, state_dim, action_dim, LR_A)
+	#critic网络
+	critic_ac = Critic_ac(sess, state_dim, action_dim, LR_C)
+
+	sess.run(tf.global_variables_initializer())
+
+	#if true，输出graph
+	if OUTPUT_GRAPH:
+		tf.summary.FileWriter('./logs/', sess.graph)
+
+	t1 = time.time()
+	for episode in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0
+
+		for step in range(MAX_EP_STEPS):
+
+			#返回actions
+			a = actor_ac.choose_action(s)
+
+			aCopy = a.copy()
+
+			#使用超参数bound对action进行裁减
+			for j in range(action_dim):
+				if a[j]<=bound:
+					# a[np.argmax(a)] += a[j]
+					a[np.argmax(a[1:])] += a[j]
+					a[j] = 0
+
+			#保留两位小数
+			a = a.round(2)
+			# a = np.zeros_like(a_temp)
+			# a[np.argmax(a_temp)] = 1
+			
+			#for MS start
+			for j in range(1, action_dim):
+				if aCopy[j]<=bound:
+					# a[np.argmax(a)] += a[j]
+					aCopy[np.argmax(aCopy[1:])] += aCopy[j]
+					aCopy[j] = 0
+			aCopy = aCopy.round(2)
+			actionList.append(aCopy)
+			#for MS end
+
+			# print('a: ',a)
+			# print('acopy: ', aCopy)
+
+			#获取state_和reward
+			s_, r = env.step(a)
+			#一个训练周期的reward之和
+			ep_reward += r
+
+			#训练
+			td_error = critic_ac.learn(s, r, s_)
+			actor_ac.learn(s, a, td_error)
+
+			s = s_
+
+			if step%50==0:#if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode, ' action probability of rl_ac: ', a)
+				# print(actionList[step])
+				# print('服务器延迟： ', env.shortest_g[env.n])
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
+
+	print('Running time of rl_ac: ', time.time()-t1)
+	return reward, actionList
+
+
+def rl_choose_by_uplink_b(env):
+	'''
+	选择用户当前所在的位置的服务器进行卸载
+	'''
+	reward = []
+
+	t1 = time.time()
+	for episode in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0
+
+		for step in range(MAX_EP_STEPS):
+			a = np.zeros([action_dim], dtype=np.int)
+			b = s[3:env.N+3]
+			a[np.argmax(b)+1] = 1
+
+			s_, r = env.step(a)
+
+			ep_reward += r
+
+			s = s_
+
+			if step%50==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode, 'action probability of rlb: ', a)
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
+
+	print('Running time of rl_choose_by_uplink_b: ', time.time()-t1)
+	return reward
+
+
+def rl_choose_by_pending_queue(env):
+	'''
+	基于等待队列来选择服务器，选择等待队列最小的服务器
+	大多数时间等待队列都为空，相当于随机选择服务器
+	'''
+	reward = []
+
+	t1 = time.time()
+	for episode in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0
+
+		for step in range(MAX_EP_STEPS):
+			a = np.zeros([action_dim], dtype=np.int32)
+			pendingQ = s[env.N+3:]
+			#当过个服务器等待队列相同时，从这些服务器中随机选择
+			temp = [i for i in range(len(pendingQ)) if pendingQ[i] == np.min(pendingQ)]
+			index = np.random.choice(temp)
+			# print(pendingQ[pendingQ == np.min(pendingQ)].tolist().index())
+			a[index] = 1
+
+			s_, r = env.step(a)
+
+			ep_reward += r
+
+			s = s_
+
+			if step%50==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode, 'action probability of rlq: ', a)
+				# print('pendingQ: ' ,pendingQ)
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
+
+	print('Running time of rl_choose_by_pending_queue: ', time.time()-t1)
+	return reward
+
+
+def rl_choose_by_uplinkb_and_pendingqueue(env):
+	reward = []
+
+	t1 = time.time()
+	for episode in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0
+
+		for step in range(MAX_EP_STEPS):
+			a = np.zeros([action_dim], dtype=np.float32)
+			b = s[3:env.N+3]
+			a[np.argmax(b)+1] += 0.5
+
+			pendingQ = s[env.N+3:]
+			#当多个服务器等待队列相同时，从这些服务器中随机选择
+			temp = [i for i in range(len(pendingQ)) if pendingQ[i] == np.min(pendingQ)]
+			index = np.random.choice(temp)
+			# print(pendingQ[pendingQ == np.min(pendingQ)].tolist().index())
+			a[index] += 0.5
+
+			s_, r = env.step(a)
+
+			ep_reward += r
+
+			s = s_
+
+			if step%50==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode, 'action probability of rlbq: ', a)
+				
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
+
+	print('Running time of rl_choose_by_uplinkb_and_pendingqueue: ', time.time()-t1)
+	return reward
+
+
+def MS(env, actionList):
+	reward = []
+
+	t1 = time.time()
+	for episode in range(MAX_EPISODES):
+		s = env.reset()
+		ep_reward = 0
+
+		for step in range(MAX_EP_STEPS):
+			# print(episode*MAX_EP_STEPS+step)
+
+			a = np.zeros([action_dim], dtype=np.float32)
+			currentAction = actionList[episode*MAX_EP_STEPS+step]
+			actionListIndexSorted = np.argsort(currentAction[1:])
+			shortest_gIndexSorted = np.argsort(env.shortest_g[env.n])
+			for i in range(action_dim-1):
+				a[shortest_gIndexSorted[i]] = currentAction[actionListIndexSorted[i]+1]
+			a[0] = currentAction[0]
+
+			s_, r = env.step(a)
+
+			ep_reward += r
+
+			s = s_
+
+			if step%50==0: # if (i == 0 and step == 0) or step == MAX_EP_STEPS-1: # if step == MAX_EP_STEPS-1:
+				print('EPISODE: ', episode, 'action probability of MS: ', a)
+				# print('currentAction: ', currentAction)
+			# 	print('state : ', s)
+			# 	print('reward : ', r)
+			# 	print('Episode:', i, ' Reward: %i' % int(ep_reward))
+		reward.append(round(ep_reward/MAX_EP_STEPS,2))
+
+	print('Running time of MS: ', time.time()-t1)
+	return reward
+
+
 #####################  hyper parameters  ####################
-
-#当EPISODES较大，STEPS较小时能获得较好效果
-MAX_EPISODES = 220
-MAX_EP_STEPS = 100
-
 LR_A = 0.001    # learning rate for actor  	0.001
 LR_C = 0.001    # learning rate for critic 	0.001
 GAMMA = 0.9     # reward discount
@@ -317,12 +369,15 @@ REPLACEMENT = [
 MEMORY_CAPACITY = 1000
 BATCH_SIZE = 32
 
+
 #是否输出graph
 OUTPUT_GRAPH = False
 
 #对rl_ac的action空间进行裁减，确保分配的任务不少于bound
 #该参数能显著改善性能，且N越大，bound应当越小
 #当N=(5,10)时，0.07可能出现负优化，0.09有较好效果；过大会退化为二进制策略
+#n=20:clip_bound=0.07
+#n=10:clip_bound=0.09
 clip_bound = 0.09
 
 #使用该代码将使随机数可以预测，使用1时将使N固定为9
@@ -332,7 +387,20 @@ clip_bound = 0.09
 #7: 13-0, 19-1, 
 #8: 6-1, 
 #9: 1-0, 10-1, 14-1, 15-1, 20-1, 22-0
-np.random.seed(5)
+#n=10,lamda=[20,50]: 1-0, 2-1, 3-0, 4-0, 5-1*, 6-0, 7-0
+#n=10,lamda=[40,70]: 1-0, 2-1, 3-0, 4-0, 5-0, 6-1, 7-1*
+#n=20,lamda=[20,50]: 1-0, 2-1, 3-1
+#n=20,lamda=[40,70]:
+np.random.seed(2)
+
+
+#当EPISODES较大，STEPS较小时能获得较好效果
+#n=10,lamda=[20,50]:MAX_EPISODES=260
+#n=10,lamda=[40,70]:MAX_EPISODES=300
+#n=20,lamda=[20,50]:MAX_EPISODES=300
+#n=20,lamda=[40,70]:MAX_EPISODES=200
+MAX_EPISODES = 300
+MAX_EP_STEPS = 100
 
 
 if __name__ == '__main__':
@@ -354,13 +422,74 @@ if __name__ == '__main__':
 
 
 	#action-critic算法
-	rac = rl_ac(env, clip_bound)
+	rac, actionListForMS = rl_ac(env, clip_bound)
+	# print(actionListForMS[0:5])
 
 	#重置计算图
 	# tf.reset_default_graph()
-	# rac_bound_0 = rl_ac(env)
+	# rac_bound_0, _ = rl_ac(env)
 	# print('episode reward of ac : ')
 	# print(rac)
+
+
+	#MS
+	rMS = MS(env, actionListForMS)
+	# print('episode reward of MS : ')
+	# print(rMS)
+
+	racnum = toolbar.countNumber(rac)
+	rmsnum = toolbar.countNumber(rMS)
+	print(round(racnum/MAX_EPISODES*MAX_EP_STEPS, 2))
+	print(round(rmsnum/MAX_EPISODES*MAX_EP_STEPS, 2))
+
+	# rl_choose_by_uplink_b
+	# rlb = rl_choose_by_uplink_b(env)
+	# print('episode reward of rlb : ')
+	# print(rlb)
+
+
+	#rl_choose_by_pending_queue
+	# rlq = rl_choose_by_pending_queue(env)
+	# print('episode reward of rlq : ')
+	# print(rlq)
+	
+
+	#rl_choose_by_uplinkb_and_pendingqueue
+	# rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
+	# print('episode reward of rlbq : ')
+	# print(rlbq)
+
+
+	# list2txtList = []
+	# list2txtList.append(rac)
+	# list2txtList.append(rMS)
+	# list2txtList.append(rlb)
+	# list2txtList.append(rlq)
+	# list2txtList.append(rlbq)
+	# filename = 'n10lamda47.txt'
+	# toolbar.list2txt(list2txtList, filename)
+	
+
+	#绘制reward图表
+	x = [i for i in range(MAX_EPISODES)]
+	plt.figure()
+	plt.plot(x, rac, color='blue', label='reload')
+	# plt.plot(x, rac_bound_0, color='orange', label='reload_nobound')
+	plt.plot(x, rMS, color='yellow', label='MS')
+	# plt.plot(x, rlb, color='green', label='SS-B')
+	# plt.plot(x, rlq, color='cyan', label='SS-W')
+	# plt.plot(x, rlbq, color='grey', label='DS-BW')
+	# plt.plot(x, rddpg, color='red', label='rddpg')
+
+	plt.legend()
+
+	plt.xlabel('EPISODE')
+	plt.ylabel('REWARD')
+
+	plt.show()
+
+	print('ok')
+
 
 
 	#ddpg算法
@@ -368,23 +497,6 @@ if __name__ == '__main__':
 	# print('episode reward of ddpg : ')
 	# print(rddpg)
 
-
-	# rl_choose_by_uplink_b
-	rlb = rl_choose_by_uplink_b(env)
-	# print('episode reward of rlb : ')
-	# print(rlb)
-
-
-	#rl_choose_by_pending_queue
-	rlq = rl_choose_by_pending_queue(env)
-	# print('episode reward of rlq : ')
-	# print(rlq)
-	
-
-	#rl_choose_by_uplinkb_and_pendingqueue
-	rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
-	# print('episode reward of rlbq : ')
-	# print(rlbq)
 
 	# y = (rddpg - np.mean(rddpg)) / np.std(rddpg)
 	# print(y)
@@ -396,22 +508,3 @@ if __name__ == '__main__':
 	# plt.plot(x, rddpg[20:], color='red')
 	# plt.plot(x, rlb[20:], color='green')
 	# plt.plot(x, rlq[20:], color='yellow')
-
-	#绘制reward图表
-	x = [i for i in range(MAX_EPISODES)]
-	plt.figure()
-	plt.plot(x, rac, color='blue', label='reload')
-	# plt.plot(x, rac_bound_0, color='orange', label='reload_nobound')
-	# plt.plot(x, rddpg, color='red', label='rddpg')
-	plt.plot(x, rlb, color='green', label='SS-B')
-	plt.plot(x, rlq, color='cyan', label='SS-W')
-	plt.plot(x, rlbq, color='grey', label='DS-BW')
-
-	plt.legend()
-
-	plt.xlabel('EPISODE')
-	plt.ylabel('REWARD')
-
-	plt.show()
-
-	print('ok')

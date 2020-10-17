@@ -1,3 +1,5 @@
+#绘制论文所需的算法使用的数据的分析图
+#绘制 边缘服务器与工作负载不平衡 直方图
 import numpy as np 
 import matplotlib.pyplot as plt
 
@@ -5,7 +7,9 @@ np.random.seed(5)
 
 
 def getData():
-
+	'''
+	获取相关实验数据
+	'''
 	workloadList = []
 	deadlineList = []
 	inputsizeList = []
@@ -33,6 +37,9 @@ def autolabel(rects):
 		plt.text(rect.get_x()+rect.get_width()/2.- 0.2, 1.03*height, '%s' % int(height))
 
 def drawHistogram(inX, inY, inColor, inXlabel, inYlabel):
+	'''
+	绘制直方图
+	'''
 	plt.bar(inX, inY, color=inColor)
 	plt.xlabel(inXlabel)
 	plt.ylabel(inYlabel)

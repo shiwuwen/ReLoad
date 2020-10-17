@@ -50,3 +50,8 @@ import numpy as np
 
 result = np.random.randint(10,size=20)
 print(result)
+
+a = np.array([6,2,3,4,5])
+
+print(np.argmax(a))
+print(np.argmax(a[1:]))

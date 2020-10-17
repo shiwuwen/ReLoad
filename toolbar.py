@@ -62,6 +62,48 @@ def get_action_space(nums:int, sums:int, actions:list, temp:list):
 			temp.pop()
 
 
+def countNumber(inList, minBound=0):
+	'''
+	计算inList中值大于minBound的个数
+	'''
+	listLenth = len(inList)
+	returnNum = 0
+	for i in range(listLenth):
+		if inList[i] > minBound:
+			returnNum += 1
+	return returnNum
+
+
+def list2txt(inList, filename):
+	'''
+	将算法训练结果保存到文件filename中
+	'''
+	t = ''
+	with open (filename,'w') as f:
+		for content in inList:
+			for index in range(len(content)):
+				t = t + str(content[index]) + ' '
+			f.write(t.strip(' '))
+			f.write('\n')
+			t = ''
+
+
+def txt2list(filename):
+	'''
+	从文件filename中读取数据并返回list
+	'''
+	returnList = []
+	with open(filename, 'r') as f:
+		for line in f.readlines():
+			strResult = line.strip('\n').split(' ')
+			temp = map(eval, strResult)
+			returnList.append(list(temp))
+
+	return returnList
+
+
+
+
 
 if __name__ == "__main__":
 	# cost = get_es_propagation_delay(5)
@@ -78,12 +120,32 @@ if __name__ == "__main__":
 	# print(cost)
 	# print(np.asarray(distance))
 
-	actions = []
-	temp = []
+	# actions = []
+	# temp = []
 
-	nums = 3
-	sums = 10 
-	get_action_space(nums, sums, actions, temp)
+	# nums = 3
+	# sums = 10 
+	# get_action_space(nums, sums, actions, temp)
 
-	print('{}个服务器时共有{}种可能'.format(nums, len(actions)))
-	print(actions)
+	# print('{}个服务器时共有{}种可能'.format(nums, len(actions)))
+	# print(actions)
+
+
+	# a = [[1.2,2,3,4],
+	# 	 [3,4,5.4,6.4],
+	# 	 [7,8,9,2]]
+	# list2txt(a, 'n10lamda25.txt')
+
+	b = txt2list('n10lamda25.txt')
+	rac = b[0]
+	rMS = b[1]
+	rlb = b[2]
+	rlq = b[3]
+	rlbq = b[4]
+
+	MAX_EPISODES = 260
+	MAX_EP_STEPS = 100
+
+	for i in range(5):
+		res = countNumber(b[i])
+		print(round(res/MAX_EPISODES*MAX_EP_STEPS, 2))
