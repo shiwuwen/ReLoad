@@ -389,17 +389,18 @@ clip_bound = 0.09
 #9: 1-0, 10-1, 14-1, 15-1, 20-1, 22-0
 #n=10,lamda=[20,50]: 1-0, 2-1, 3-0, 4-0, 5-1*, 6-0, 7-0
 #n=10,lamda=[40,70]: 1-0, 2-1, 3-0, 4-0, 5-0, 6-1, 7-1*
-#n=20,lamda=[20,50]: 1-0, 2-1, 3-1
-#n=20,lamda=[40,70]:
-np.random.seed(2)
+#n=20,lamda=[20,50]: 1-0, 2-0, 3-0, 4-0, 5-1, 6-0, 7-1*(epi100), 8-0, 9-0, 10-0, 11-0, 12-0, 13-0
+#n=20,lamda=[40,70]: 1-0, 2-0, 3-0, 4-0, 5-0, 6-0, 7-0, 8-1(epi90), 
+#                    9-0, 10-0, 11-0, 12-0, 13-1*(100), 14-0, 15-0, 16-0
+np.random.seed(13)
 
 
 #当EPISODES较大，STEPS较小时能获得较好效果
 #n=10,lamda=[20,50]:MAX_EPISODES=260
 #n=10,lamda=[40,70]:MAX_EPISODES=300
-#n=20,lamda=[20,50]:MAX_EPISODES=300
-#n=20,lamda=[40,70]:MAX_EPISODES=200
-MAX_EPISODES = 300
+#n=20,lamda=[20,50]:MAX_EPISODES=100
+#n=20,lamda=[40,70]:MAX_EPISODES=100
+MAX_EPISODES = 100
 MAX_EP_STEPS = 100
 
 
@@ -437,13 +438,8 @@ if __name__ == '__main__':
 	# print('episode reward of MS : ')
 	# print(rMS)
 
-	racnum = toolbar.countNumber(rac)
-	rmsnum = toolbar.countNumber(rMS)
-	print(round(racnum/MAX_EPISODES*MAX_EP_STEPS, 2))
-	print(round(rmsnum/MAX_EPISODES*MAX_EP_STEPS, 2))
-
 	# rl_choose_by_uplink_b
-	# rlb = rl_choose_by_uplink_b(env)
+	rlb = rl_choose_by_uplink_b(env)
 	# print('episode reward of rlb : ')
 	# print(rlb)
 
@@ -458,6 +454,13 @@ if __name__ == '__main__':
 	# rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
 	# print('episode reward of rlbq : ')
 	# print(rlbq)
+
+	racnum = toolbar.countNumber(rac)
+	rmsnum = toolbar.countNumber(rMS)
+	rlbnum = toolbar.countNumber(rlb)
+	print(round(racnum/MAX_EPISODES*MAX_EP_STEPS, 2))
+	print(round(rmsnum/MAX_EPISODES*MAX_EP_STEPS, 2))
+	print(round(rlbnum/MAX_EPISODES*MAX_EP_STEPS, 2))
 
 
 	# list2txtList = []
@@ -476,7 +479,7 @@ if __name__ == '__main__':
 	plt.plot(x, rac, color='blue', label='reload')
 	# plt.plot(x, rac_bound_0, color='orange', label='reload_nobound')
 	plt.plot(x, rMS, color='yellow', label='MS')
-	# plt.plot(x, rlb, color='green', label='SS-B')
+	plt.plot(x, rlb, color='green', label='SS-B')
 	# plt.plot(x, rlq, color='cyan', label='SS-W')
 	# plt.plot(x, rlbq, color='grey', label='DS-BW')
 	# plt.plot(x, rddpg, color='red', label='rddpg')
