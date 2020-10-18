@@ -67,7 +67,7 @@ def countNumber(inList, minBound=0):
 	计算inList中值大于minBound的个数
 	'''
 	listLenth = len(inList)
-	returnNum = 0
+	returnNum = 0.0
 	for i in range(listLenth):
 		if inList[i] > minBound:
 			returnNum += 1

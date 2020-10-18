@@ -376,7 +376,7 @@ OUTPUT_GRAPH = False
 #对rl_ac的action空间进行裁减，确保分配的任务不少于bound
 #该参数能显著改善性能，且N越大，bound应当越小
 #当N=(5,10)时，0.07可能出现负优化，0.09有较好效果；过大会退化为二进制策略
-#n=20:clip_bound=0.07
+#n=20:clip_bound=0.09
 #n=10:clip_bound=0.09
 clip_bound = 0.09
 
@@ -390,9 +390,8 @@ clip_bound = 0.09
 #n=10,lamda=[20,50]: 1-0, 2-1, 3-0, 4-0, 5-1*, 6-0, 7-0
 #n=10,lamda=[40,70]: 1-0, 2-1, 3-0, 4-0, 5-0, 6-1, 7-1*
 #n=20,lamda=[20,50]: 1-0, 2-0, 3-0, 4-0, 5-1, 6-0, 7-1*(epi100), 8-0, 9-0, 10-0, 11-0, 12-0, 13-0
-#n=20,lamda=[40,70]: 1-0, 2-0, 3-0, 4-0, 5-0, 6-0, 7-0, 8-1(epi90), 
-#                    9-0, 10-0, 11-0, 12-0, 13-1*(100), 14-0, 15-0, 16-0
-np.random.seed(13)
+#n=20,lamda=[40,70]: 1-0, 2-0, 3-0, 4-0, 5-0, 6-0, 7-0, 8-1(epi90), 9-0, 10-0, 11-0, 12-0, 13-1*(100)
+np.random.seed(5)
 
 
 #当EPISODES较大，STEPS较小时能获得较好效果
@@ -400,7 +399,7 @@ np.random.seed(13)
 #n=10,lamda=[40,70]:MAX_EPISODES=300
 #n=20,lamda=[20,50]:MAX_EPISODES=100
 #n=20,lamda=[40,70]:MAX_EPISODES=100
-MAX_EPISODES = 100
+MAX_EPISODES = 260
 MAX_EP_STEPS = 100
 
 
@@ -433,11 +432,6 @@ if __name__ == '__main__':
 	# print(rac)
 
 
-	#MS
-	rMS = MS(env, actionListForMS)
-	# print('episode reward of MS : ')
-	# print(rMS)
-
 	# rl_choose_by_uplink_b
 	rlb = rl_choose_by_uplink_b(env)
 	# print('episode reward of rlb : ')
@@ -445,32 +439,38 @@ if __name__ == '__main__':
 
 
 	#rl_choose_by_pending_queue
-	# rlq = rl_choose_by_pending_queue(env)
+	rlq = rl_choose_by_pending_queue(env)
 	# print('episode reward of rlq : ')
 	# print(rlq)
 	
 
 	#rl_choose_by_uplinkb_and_pendingqueue
-	# rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
+	rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
 	# print('episode reward of rlbq : ')
 	# print(rlbq)
 
-	racnum = toolbar.countNumber(rac)
-	rmsnum = toolbar.countNumber(rMS)
-	rlbnum = toolbar.countNumber(rlb)
-	print(round(racnum/MAX_EPISODES*MAX_EP_STEPS, 2))
-	print(round(rmsnum/MAX_EPISODES*MAX_EP_STEPS, 2))
-	print(round(rlbnum/MAX_EPISODES*MAX_EP_STEPS, 2))
+
+	#MS
+	rMS = MS(env, actionListForMS)
+	# print('episode reward of MS : ')
+	# print(rMS)
+
+	# racnum = toolbar.countNumber(rac)
+	# rmsnum = toolbar.countNumber(rMS)
+	# rlbnum = toolbar.countNumber(rlb)
+	# print(round(racnum/MAX_EPISODES*MAX_EP_STEPS, 2))
+	# print(round(rmsnum/MAX_EPISODES*MAX_EP_STEPS, 2))
+	# print(round(rlbnum/MAX_EPISODES*MAX_EP_STEPS, 2))
 
 
-	# list2txtList = []
-	# list2txtList.append(rac)
-	# list2txtList.append(rMS)
-	# list2txtList.append(rlb)
-	# list2txtList.append(rlq)
-	# list2txtList.append(rlbq)
-	# filename = 'n10lamda47.txt'
-	# toolbar.list2txt(list2txtList, filename)
+	list2txtList = []
+	list2txtList.append(rac)
+	list2txtList.append(rlb)
+	list2txtList.append(rlq)
+	list2txtList.append(rlbq)
+	list2txtList.append(rMS)
+	filename = 'n10lamda25.txt'
+	toolbar.list2txt(list2txtList, filename)
 	
 
 	#绘制reward图表
@@ -478,10 +478,10 @@ if __name__ == '__main__':
 	plt.figure()
 	plt.plot(x, rac, color='blue', label='reload')
 	# plt.plot(x, rac_bound_0, color='orange', label='reload_nobound')
-	plt.plot(x, rMS, color='yellow', label='MS')
 	plt.plot(x, rlb, color='green', label='SS-B')
-	# plt.plot(x, rlq, color='cyan', label='SS-W')
-	# plt.plot(x, rlbq, color='grey', label='DS-BW')
+	plt.plot(x, rlq, color='cyan', label='SS-W')
+	plt.plot(x, rlbq, color='grey', label='DS-BW')
+	plt.plot(x, rMS, color='yellow', label='MS')
 	# plt.plot(x, rddpg, color='red', label='rddpg')
 
 	plt.legend()

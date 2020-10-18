@@ -18,7 +18,7 @@ class Environment:
 		#用户设备的计算能力 GHz
 		self.a = np.random.uniform(0.010,0.040)
 		#边缘服务器的数量 [5,10), [10,20)
-		self.N = 20 #np.random.randint(5,10)
+		self.N = 10 #np.random.randint(5,10)
 		#N个边缘服务器的计算能力 GHz
 		self.c = np.random.uniform(0.100,0.200, size=self.N)
 		#任意两个边缘服务器之间的传播延迟，这里通过随机数生成 s
@@ -26,7 +26,7 @@ class Environment:
 		#获取任意两个服务器之间的最短延迟
 		self.shortest_g = self._get_shortest_es_delay(self.g)
 		#任务到达时间所服从的指数分布的均值 [4,8], [2,5], [20,50]
-		self.lamda = np.random.uniform(0.4, 0.7)
+		self.lamda = np.random.uniform(0.2, 0.5)
 		#用户设备和N个服务器之间的上传带宽 MHz
 		self.uplink = self._get_user_server_uplink()
 		#动作空间的纬度
