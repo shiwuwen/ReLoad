@@ -102,10 +102,30 @@ def txt2list(filename):
 	return returnList
 
 
+def sumListValue(inList, moveStep=10):
+	listLen = len(inList)
+	renList = []
+
+	for i in range(0, listLen, moveStep):
+		temp = 0.0
+		for j in range(moveStep):
+			temp += inList[i+j]
+		renList.append(round(temp/moveStep, 2))
+
+	return renList
+
+
 
 
 
 if __name__ == "__main__":
+
+	a = [0.49,0.5,0.57,0.49,0.56,0.53,0.57,0.49,0.46,-2.85] 
+	res = sumListValue(a, 2)
+	print(res)
+
+
+
 	# cost = get_es_propagation_delay(5)
 	# print("cost : ")
 	# print(cost)
@@ -136,16 +156,16 @@ if __name__ == "__main__":
 	# 	 [7,8,9,2]]
 	# list2txt(a, 'n10lamda25.txt')
 
-	b = txt2list('n10lamda25.txt')
-	rac = b[0]
-	rMS = b[1]
-	rlb = b[2]
-	rlq = b[3]
-	rlbq = b[4]
+	# b = txt2list('n10lamda25.txt')
+	# rac = b[0]
+	# rMS = b[1]
+	# rlb = b[2]
+	# rlq = b[3]
+	# rlbq = b[4]
 
-	MAX_EPISODES = 260
-	MAX_EP_STEPS = 100
+	# MAX_EPISODES = 260
+	# MAX_EP_STEPS = 100
 
-	for i in range(5):
-		res = countNumber(b[i])
-		print(round(res/MAX_EPISODES*MAX_EP_STEPS, 2))
+	# for i in range(5):
+	# 	res = countNumber(b[i])
+	# 	print(round(res/MAX_EPISODES*MAX_EP_STEPS, 2))
