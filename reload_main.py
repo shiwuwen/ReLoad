@@ -433,25 +433,25 @@ if __name__ == '__main__':
 
 
 	# rl_choose_by_uplink_b
-	rlb = rl_choose_by_uplink_b(env)
+	# rlb = rl_choose_by_uplink_b(env)
 	# print('episode reward of rlb : ')
 	# print(rlb)
 
 
 	#rl_choose_by_pending_queue
-	rlq = rl_choose_by_pending_queue(env)
+	# rlq = rl_choose_by_pending_queue(env)
 	# print('episode reward of rlq : ')
 	# print(rlq)
 	
 
 	#rl_choose_by_uplinkb_and_pendingqueue
-	rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
+	# rlbq = rl_choose_by_uplinkb_and_pendingqueue(env)
 	# print('episode reward of rlbq : ')
 	# print(rlbq)
 
 
 	#MS
-	rMS = MS(env, actionListForMS)
+	# rMS = MS(env, actionListForMS)
 	# print('episode reward of MS : ')
 	# print(rMS)
 
@@ -463,31 +463,32 @@ if __name__ == '__main__':
 	# print(round(rlbnum/MAX_EPISODES*MAX_EP_STEPS, 2))
 
 
-	list2txtList = []
-	list2txtList.append(rac)
-	list2txtList.append(rlb)
-	list2txtList.append(rlq)
-	list2txtList.append(rlbq)
-	list2txtList.append(rMS)
-	filename = 'n10lamda25.txt'
-	toolbar.list2txt(list2txtList, filename)
+	# list2txtList = []
+	# list2txtList.append(rac)
+	# list2txtList.append(rac_bound_0)
+	# # list2txtList.append(rlb)
+	# # list2txtList.append(rlq)
+	# # list2txtList.append(rlbq)
+	# # list2txtList.append(rMS)
+	# filename = 'n10lamda25_compare.txt'
+	# toolbar.list2txt(list2txtList, filename)
 	
 
 	#绘制reward图表
 	x = [i for i in range(MAX_EPISODES)]
 	plt.figure()
-	plt.plot(x, rac, color='blue', label='reload')
-	# plt.plot(x, rac_bound_0, color='orange', label='reload_nobound')
-	plt.plot(x, rlb, color='green', label='SS-B')
-	plt.plot(x, rlq, color='cyan', label='SS-W')
-	plt.plot(x, rlbq, color='grey', label='DS-BW')
-	plt.plot(x, rMS, color='yellow', label='MS')
+	plt.plot(x, rac, color='blue', label='Reload')
+	# plt.plot(x, rac_bound_0, color='orange', label='Reload_nobound')
+	# plt.plot(x, rlb, color='green', label='SS-B')
+	# plt.plot(x, rlq, color='cyan', label='SS-W')
+	# plt.plot(x, rlbq, color='grey', label='DS-BW')
+	# plt.plot(x, rMS, color='yellow', label='MS')
 	# plt.plot(x, rddpg, color='red', label='rddpg')
 
 	plt.legend()
 
-	plt.xlabel('EPISODE')
-	plt.ylabel('REWARD')
+	plt.xlabel('Episode')
+	plt.ylabel('Reward')
 
 	plt.show()
 
