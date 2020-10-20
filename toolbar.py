@@ -31,6 +31,7 @@ def dijkstra(v0, cost):
 def get_es_propagation_delay(num):
 	'''
 	生成服务器间的传播延迟
+	用于测试
 	'''
 	np.random.seed(1)
 	g = np.random.uniform(0.010, 0.100,size=(num,num))
@@ -47,6 +48,7 @@ def get_es_propagation_delay(num):
 def get_action_space(nums:int, sums:int, actions:list, temp:list):
 	'''
 	获取不同个数服务器时可选的动作空间数
+	当对所有动作空间进行穷举时使用
 	'''
 	if nums<1:
 		print('nums must greater than 0')
@@ -76,7 +78,7 @@ def countNumber(inList, minBound=0):
 
 def list2txt(inList, filename):
 	'''
-	将算法训练结果保存到文件filename中
+	将算法训练结果inList保存到文件filename中
 	'''
 	t = ''
 	with open (filename,'w') as f:
@@ -103,6 +105,9 @@ def txt2list(filename):
 
 
 def sumListValue(inList, moveStep=10):
+	'''
+	在inList中以moveStep为步长，对步长内的数据进行求均值，从而减少inList长度
+	'''
 	listLen = len(inList)
 	renList = []
 
