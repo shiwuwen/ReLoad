@@ -120,9 +120,9 @@ def sumListValue(inList, moveStep=10):
 
 if __name__ == "__main__":
 
-	a = [0.49,0.5,0.57,0.49,0.56,0.53,0.57,0.49,0.46,-2.85] 
-	res = sumListValue(a, 2)
-	print(res)
+	# a = [0.49,0.5,0.57,0.49,0.56,0.53,0.57,0.49,0.46,-2.85] 
+	# res = sumListValue(a, 2)
+	# print(res)
 
 
 
@@ -140,14 +140,14 @@ if __name__ == "__main__":
 	# print(cost)
 	# print(np.asarray(distance))
 
-	# actions = []
-	# temp = []
+	actions = []
+	temp = []
 
-	# nums = 3
-	# sums = 10 
-	# get_action_space(nums, sums, actions, temp)
+	nums = 10
+	sums = 10 
+	get_action_space(nums, sums, actions, temp)
 
-	# print('{}个服务器时共有{}种可能'.format(nums, len(actions)))
+	print('{}个服务器时共有{}种可能'.format(nums, len(actions)))
 	# print(actions)
 
 

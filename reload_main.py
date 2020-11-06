@@ -281,6 +281,9 @@ def rl_choose_by_pending_queue(env):
 
 
 def rl_choose_by_uplinkb_and_pendingqueue(env):
+	'''
+	基于上传带宽和任务队列选择actions
+	'''
 	reward = []
 
 	t1 = time.time()
@@ -319,6 +322,9 @@ def rl_choose_by_uplinkb_and_pendingqueue(env):
 
 
 def MS(env, actionList):
+	'''
+	首先使用Reload生成卸载策略，之后在不改变分配比列的情况下，按照服务器间延迟重新选择服务器
+	'''
 	reward = []
 
 	t1 = time.time()
